@@ -1,0 +1,1128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CF Image Worker — Test UI</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #090d11;
+      --bg-layer: #0f1720;
+      --bg-card: #111c27;
+      --bg-input: #132231;
+      --border: #1f364a;
+      --border-strong: #2e4f6d;
+      --border-focus: #17bebb;
+      --primary: #17bebb;
+      --primary-soft: #0d6768;
+      --accent: #ff7a48;
+      --text: #eef6fb;
+      --text-muted: #9ab1c3;
+      --text-dim: #5f7689;
+      --success: #22c55e;
+      --error: #f97373;
+      --radius: 14px;
+      --radius-sm: 10px;
+      --shadow-lg: 0 26px 60px rgba(2, 7, 13, 0.52);
+    }
+
+    html, body {
+      min-height: 100%;
+    }
+
+    body {
+      font-family: 'Space Grotesk', sans-serif;
+      background:
+        radial-gradient(circle at 14% 12%, rgba(23, 190, 187, 0.22), transparent 33%),
+        radial-gradient(circle at 92% 9%, rgba(255, 122, 72, 0.16), transparent 30%),
+        linear-gradient(135deg, #090d11 0%, #0c141d 56%, #101a25 100%);
+      color: var(--text);
+      line-height: 1.6;
+      letter-spacing: 0.01em;
+    }
+
+    header {
+      border-bottom: 1px solid var(--border);
+      padding: 18px 30px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      background: rgba(9, 13, 17, 0.74);
+      backdrop-filter: blur(14px);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .logo {
+      width: 38px;
+      height: 38px;
+      border-radius: 12px;
+      background: linear-gradient(145deg, var(--primary), var(--accent));
+      color: #041012;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      flex-shrink: 0;
+      box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.08);
+    }
+
+    header h1 {
+      font-size: 17px;
+      font-weight: 700;
+      letter-spacing: 0.03em;
+    }
+
+    header p {
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    .badge {
+      margin-left: auto;
+      background: rgba(255, 122, 72, 0.15);
+      border: 1px solid rgba(255, 122, 72, 0.45);
+      color: #ffd4c4;
+      font-size: 11px;
+      font-weight: 600;
+      padding: 4px 10px;
+      border-radius: 999px;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+
+    .main {
+      display: grid;
+      grid-template-columns: minmax(330px, 420px) 1fr;
+      min-height: calc(100vh - 75px);
+    }
+
+    .sidebar {
+      border-right: 1px solid var(--border);
+      padding: 22px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+      background: linear-gradient(180deg, rgba(12, 22, 32, 0.9) 0%, rgba(11, 18, 26, 0.84) 100%);
+    }
+
+    .preview-area {
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      background:
+        linear-gradient(145deg, rgba(11, 17, 24, 0.7), rgba(7, 12, 17, 0.85)),
+        repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.02) 0, rgba(255, 255, 255, 0.02) 1px, transparent 1px, transparent 28px);
+    }
+
+    .section-label {
+      font-size: 10px;
+      font-weight: 700;
+      color: var(--text-dim);
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      margin-bottom: 8px;
+    }
+
+    .field { display: flex; flex-direction: column; gap: 6px; }
+
+    label {
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    input, textarea, select {
+      width: 100%;
+      background: linear-gradient(180deg, rgba(17, 33, 48, 0.86), rgba(15, 27, 39, 0.94));
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 10px 12px;
+      border-radius: var(--radius-sm);
+      font-family: inherit;
+      font-size: 13px;
+      transition: border-color 0.18s, box-shadow 0.18s, transform 0.18s;
+      outline: none;
+    }
+
+    input:focus, textarea:focus, select:focus {
+      border-color: var(--border-focus);
+      box-shadow: 0 0 0 3px rgba(23, 190, 187, 0.18);
+      transform: translateY(-1px);
+    }
+
+    input[type="password"] {
+      font-family: 'IBM Plex Mono', monospace;
+      letter-spacing: 1.2px;
+    }
+
+    textarea { resize: vertical; min-height: 96px; }
+    select option { background: #132231; }
+
+    .model-grid {
+      display: grid;
+      gap: 10px;
+    }
+
+    .model-card {
+      display: grid;
+      grid-template-columns: auto minmax(0, 1fr) auto;
+      align-items: start;
+      gap: 10px;
+      padding: 11px 12px;
+      background: linear-gradient(180deg, rgba(19, 34, 49, 0.88), rgba(16, 29, 41, 0.9));
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      transition: border-color 0.18s, transform 0.18s, box-shadow 0.18s;
+    }
+
+    .model-card:hover {
+      border-color: var(--border-strong);
+      transform: translateY(-1px);
+    }
+
+    .model-card.selected {
+      border-color: var(--primary);
+      box-shadow: inset 0 0 0 1px rgba(23, 190, 187, 0.24);
+      background: linear-gradient(180deg, rgba(18, 42, 50, 0.9), rgba(15, 35, 43, 0.94));
+    }
+
+    .model-card input[type="radio"] {
+      width: auto;
+      height: auto;
+      margin-top: 2px;
+      padding: 0;
+      border: 0;
+      background: transparent;
+      accent-color: var(--primary);
+      flex-shrink: 0;
+      transform: scale(1.02);
+    }
+
+    .model-info {
+      min-width: 0;
+    }
+
+    .model-name { font-size: 12px; font-weight: 600; color: var(--text); }
+    .model-desc { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+
+    .model-tag {
+      font-size: 10px;
+      font-weight: 600;
+      padding: 2px 7px;
+      border-radius: 999px;
+      flex-shrink: 0;
+      align-self: start;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+    .tag-fast { background: rgba(34,197,94,0.16); color: #88ecad; }
+    .tag-quality { background: rgba(23,190,187,0.16); color: #7ce6e3; }
+    .tag-art { background: rgba(255,122,72,0.18); color: #ffc5b0; }
+
+    .range-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    input[type="range"] {
+      padding: 0;
+      height: 4px;
+      accent-color: var(--primary);
+      cursor: pointer;
+    }
+
+    .range-val {
+      font-size: 12px;
+      color: var(--primary);
+      font-weight: 600;
+      font-family: 'IBM Plex Mono', monospace;
+    }
+
+    .divider {
+      border: none;
+      border-top: 1px solid var(--border);
+      opacity: 0.72;
+    }
+
+    .btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 12px 20px;
+      border-radius: var(--radius-sm);
+      font-size: 14px;
+      font-weight: 600;
+      border: none;
+      cursor: pointer;
+      transition: transform 0.18s, box-shadow 0.18s, border-color 0.18s;
+      font-family: inherit;
+    }
+
+    .btn-primary {
+      background: linear-gradient(130deg, var(--primary), #31d8d2 58%, var(--accent));
+      color: #081216;
+      width: 100%;
+      box-shadow: 0 14px 30px rgba(23, 190, 187, 0.24);
+    }
+    .btn-primary:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 18px 32px rgba(23, 190, 187, 0.34);
+    }
+    .btn-primary:active { transform: translateY(0); }
+    .btn-primary:disabled { opacity: 0.55; cursor: not-allowed; transform: none; box-shadow: none; }
+
+    .btn-ghost {
+      background: rgba(19, 34, 49, 0.7);
+      color: var(--text-muted);
+      border: 1px solid var(--border);
+      font-size: 12px;
+      padding: 7px 12px;
+    }
+    .btn-ghost:hover {
+      border-color: var(--primary);
+      color: var(--text);
+      transform: translateY(-1px);
+    }
+
+    .tab-bar {
+      display: flex;
+      border-bottom: 1px solid var(--border);
+      padding: 14px 20px 10px;
+      gap: 8px;
+      overflow-x: auto;
+      scrollbar-width: thin;
+      background: rgba(8, 13, 18, 0.55);
+    }
+
+    .tab {
+      padding: 8px 14px;
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.03em;
+      color: var(--text-muted);
+      border: 1px solid transparent;
+      border-radius: 999px;
+      cursor: pointer;
+      transition: color 0.18s, border-color 0.18s, background 0.18s;
+      white-space: nowrap;
+    }
+    .tab.active {
+      color: #d8ffff;
+      border-color: rgba(23, 190, 187, 0.55);
+      background: rgba(23, 190, 187, 0.12);
+    }
+    .tab:hover {
+      color: var(--text);
+      border-color: var(--border-strong);
+    }
+
+    .tab-content {
+      display: none;
+      flex: 1;
+      overflow: auto;
+      padding: 24px;
+    }
+
+    .tab-content.active {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      animation: reveal 0.24s ease;
+    }
+
+    .image-result {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      flex: 1;
+      gap: 16px;
+      background: linear-gradient(180deg, rgba(10, 18, 26, 0.5), rgba(7, 12, 18, 0.35));
+      border: 1px solid rgba(47, 74, 96, 0.45);
+      border-radius: var(--radius);
+      padding: 22px;
+    }
+
+    .image-placeholder {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+      color: var(--text-dim);
+      text-align: center;
+    }
+
+    .image-placeholder svg { opacity: 0.38; }
+    .image-placeholder p { font-size: 14px; }
+
+    .gen-image {
+      max-width: 100%;
+      max-height: 70vh;
+      border-radius: var(--radius);
+      box-shadow: var(--shadow-lg);
+      border: 1px solid rgba(82, 116, 145, 0.42);
+      display: none;
+    }
+
+    .image-actions { display: none; gap: 10px; }
+
+    .spinner {
+      width: 40px;
+      height: 40px;
+      border: 3px solid var(--border);
+      border-top-color: var(--primary);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      display: none;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .loading-text {
+      font-size: 13px;
+      color: var(--text-muted);
+      display: none;
+    }
+
+    .code-block {
+      background: linear-gradient(180deg, rgba(17, 31, 45, 0.88), rgba(13, 24, 35, 0.95));
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 16px;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 12px;
+      color: #d1e6ff;
+      overflow-x: auto;
+      white-space: pre;
+      line-height: 1.7;
+    }
+
+    .status-bar {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 12px;
+      background: rgba(19, 34, 49, 0.68);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      font-size: 12px;
+    }
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--text-dim);
+      flex-shrink: 0;
+    }
+    .status-dot.ok { background: var(--success); box-shadow: 0 0 6px var(--success); }
+    .status-dot.err { background: var(--error); }
+    .status-dot.loading { background: var(--primary); animation: pulse 1s ease-in-out infinite; }
+    @keyframes pulse { 50% { opacity: 0.4; } }
+    @keyframes reveal {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .response-meta {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(100px, 1fr));
+      gap: 10px;
+    }
+
+    .meta-card {
+      background: linear-gradient(180deg, rgba(20, 36, 50, 0.78), rgba(16, 28, 39, 0.86));
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 12px 14px;
+    }
+    .meta-card .label { font-size: 11px; color: var(--text-dim); margin-bottom: 4px; }
+    .meta-card .value { font-size: 15px; font-weight: 600; color: var(--text); font-family: 'IBM Plex Mono', monospace; }
+
+    .raw-response {
+      max-height: 320px;
+      overflow-y: auto;
+    }
+
+    .history-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+      gap: 12px;
+    }
+
+    .history-item {
+      aspect-ratio: 1;
+      border-radius: var(--radius-sm);
+      overflow: hidden;
+      border: 1px solid var(--border);
+      cursor: pointer;
+      transition: border-color 0.18s, transform 0.18s;
+      position: relative;
+      background: #0e1720;
+    }
+    .history-item:hover {
+      border-color: var(--primary);
+      transform: translateY(-2px);
+    }
+    .history-item img { width: 100%; height: 100%; object-fit: cover; }
+    .history-item .hist-prompt {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      padding: 6px 8px;
+      background: linear-gradient(transparent, rgba(0, 0, 0, 0.84));
+      font-size: 10px;
+      color: #f7fbff;
+      display: -webkit-box;
+      line-clamp: 2;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    .empty-history {
+      grid-column: 1/-1;
+      text-align: center;
+      color: var(--text-dim);
+      font-size: 13px;
+      padding: 40px;
+    }
+
+    .syntax-key { color: #4fd6cb; }
+    .syntax-str { color: #ffd59f; }
+    .syntax-num { color: #9ee7ff; }
+    .syntax-bool { color: #ff9ca0; }
+
+    .n8n-guide { display: flex; flex-direction: column; gap: 16px; }
+    .step {
+      display: flex;
+      gap: 14px;
+      align-items: flex-start;
+      background: rgba(17, 30, 43, 0.55);
+      border: 1px solid rgba(40, 63, 83, 0.52);
+      border-radius: var(--radius-sm);
+      padding: 12px;
+    }
+    .step-num {
+      width: 28px;
+      height: 28px;
+      background: rgba(23, 190, 187, 0.18);
+      color: #a5f4ef;
+      border: 1px solid rgba(23, 190, 187, 0.45);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      font-weight: 700;
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+    .step-body h4 { font-size: 13px; font-weight: 600; margin-bottom: 4px; }
+    .step-body p { font-size: 12px; color: var(--text-muted); }
+    .step-body .code-inline {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 11px;
+      background: rgba(14, 32, 44, 0.95);
+      border: 1px solid var(--border);
+      padding: 2px 6px;
+      border-radius: 4px;
+      color: #9fe8ff;
+    }
+
+    @media (max-width: 1024px) {
+      .main { grid-template-columns: 1fr; }
+      .sidebar {
+        border-right: none;
+        border-bottom: 1px solid var(--border);
+        max-height: 58vh;
+      }
+      .tab-content { padding: 18px; }
+      .range-row { grid-template-columns: 1fr; }
+    }
+
+    @media (max-width: 640px) {
+      header {
+        padding: 14px 14px;
+        gap: 10px;
+      }
+      header h1 { font-size: 15px; }
+      header p { font-size: 11px; }
+      .badge { display: none; }
+      .sidebar { padding: 14px; }
+      .tab-bar { padding: 10px; }
+      .tab { font-size: 11px; padding: 7px 11px; }
+      .image-result { padding: 14px; }
+      .response-meta { grid-template-columns: 1fr; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation: none !important;
+        transition: none !important;
+      }
+    }
+
+    .tooltip {
+      font-size: 11px;
+      color: var(--text-dim);
+      font-weight: 400;
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="logo">CF</div>
+  <div>
+    <h1>CF Image Worker</h1>
+    <p>Cloudflare AI · OpenAI-Compatible API</p>
+  </div>
+  <span class="badge">v1.0</span>
+</header>
+
+<div class="main">
+  <aside class="sidebar">
+    <div>
+      <div class="section-label">Connection</div>
+      <div class="field">
+        <label>Worker URL</label>
+        <input type="url" id="workerUrl" placeholder="https://your-worker.workers.dev" />
+      </div>
+      <div class="field" style="margin-top:10px">
+        <label>API Key <span class="tooltip">(leave blank if no auth)</span></label>
+        <input type="password" id="apiKey" placeholder="sk-••••••••••••" />
+      </div>
+    </div>
+
+    <hr class="divider" />
+
+    <div>
+      <div class="section-label">Model</div>
+      <div class="model-grid" id="modelGrid">
+        <label class="model-card selected" onclick="selectModel(this)">
+          <input type="radio" name="model" value="@cf/black-forest-labs/flux-1-schnell" checked />
+          <div class="model-info">
+            <div class="model-name">FLUX.1 Schnell</div>
+            <div class="model-desc">Black Forest Labs · Best overall</div>
+          </div>
+          <span class="model-tag tag-quality">Best</span>
+        </label>
+        <label class="model-card" onclick="selectModel(this)">
+          <input type="radio" name="model" value="@cf/black-forest-labs/flux-2-klein-9b" />
+          <div class="model-info">
+            <div class="model-name">FLUX.2 Klein 9B</div>
+            <div class="model-desc">Black Forest Labs · Strong prompts</div>
+          </div>
+          <span class="model-tag tag-quality">New</span>
+        </label>
+        <label class="model-card" onclick="selectModel(this)">
+          <input type="radio" name="model" value="@cf/bytedance/stable-diffusion-xl-lightning" />
+          <div class="model-info">
+            <div class="model-name">SDXL Lightning</div>
+            <div class="model-desc">ByteDance · Ultra fast</div>
+          </div>
+          <span class="model-tag tag-fast">Fast</span>
+        </label>
+        <label class="model-card" onclick="selectModel(this)">
+          <input type="radio" name="model" value="@cf/stabilityai/stable-diffusion-xl-base-1.0" />
+          <div class="model-info">
+            <div class="model-name">SDXL Base 1.0</div>
+            <div class="model-desc">StabilityAI · High quality</div>
+          </div>
+          <span class="model-tag tag-quality">Quality</span>
+        </label>
+        <label class="model-card" onclick="selectModel(this)">
+          <input type="radio" name="model" value="@cf/lykon/dreamshaper-8-lcm" />
+          <div class="model-info">
+            <div class="model-name">Dreamshaper 8</div>
+            <div class="model-desc">Lykon · Artistic style</div>
+          </div>
+          <span class="model-tag tag-art">Art</span>
+        </label>
+      </div>
+    </div>
+
+    <hr class="divider" />
+
+    <div>
+      <div class="section-label">Prompt</div>
+      <div class="field">
+        <textarea id="prompt" placeholder="A futuristic city at sunset with neon lights reflecting on rain-wet streets, cinematic, 8K ultra-detailed..."></textarea>
+      </div>
+      <div class="field" style="margin-top:10px">
+        <label>Negative Prompt <span class="tooltip">(optional)</span></label>
+        <textarea id="negativePrompt" placeholder="blurry, low quality, watermark..." style="min-height:60px"></textarea>
+      </div>
+    </div>
+
+    <div class="range-row">
+      <div class="field">
+        <label>Steps <span class="range-val" id="stepsVal">4</span></label>
+        <input type="range" id="steps" min="1" max="20" value="4" oninput="document.getElementById('stepsVal').textContent=this.value" />
+      </div>
+      <div class="field">
+        <label>Guidance <span class="range-val" id="guidanceVal">7.5</span></label>
+        <input type="range" id="guidance" min="1" max="20" step="0.5" value="7.5" oninput="document.getElementById('guidanceVal').textContent=this.value" />
+      </div>
+    </div>
+
+    <button class="btn btn-primary" id="generateBtn" onclick="generate()">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+      Generate Image
+    </button>
+
+    <div class="status-bar">
+      <div class="status-dot" id="statusDot"></div>
+      <span id="statusText" style="color:var(--text-muted)">Ready</span>
+    </div>
+  </aside>
+
+  <div class="preview-area">
+    <div class="tab-bar">
+      <div class="tab active" onclick="switchTab('image', this)">Image</div>
+      <div class="tab" onclick="switchTab('response', this)">Response</div>
+      <div class="tab" onclick="switchTab('history', this)">History</div>
+      <div class="tab" onclick="switchTab('guide', this)">n8n / Make.com</div>
+      <div class="tab" onclick="switchTab('curl', this)">cURL / API</div>
+    </div>
+
+    <div class="tab-content active" id="tab-image">
+      <div class="image-result">
+        <div class="spinner" id="spinner"></div>
+        <div class="loading-text" id="loadingText">Generating image...</div>
+        <div class="image-placeholder" id="placeholder">
+          <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1">
+            <rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/>
+          </svg>
+          <p>Enter a prompt and click Generate</p>
+        </div>
+        <img class="gen-image" id="genImage" alt="Generated image" />
+        <div class="image-actions" id="imageActions">
+          <button class="btn btn-ghost" onclick="downloadImage()">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            Download
+          </button>
+          <button class="btn btn-ghost" onclick="copyBase64()">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+            Copy Base64
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div class="tab-content" id="tab-response">
+      <div id="responseMeta" class="response-meta" style="display:none">
+        <div class="meta-card">
+          <div class="label">Status</div>
+          <div class="value" id="metaStatus">—</div>
+        </div>
+        <div class="meta-card">
+          <div class="label">Time</div>
+          <div class="value" id="metaTime">—</div>
+        </div>
+        <div class="meta-card">
+          <div class="label">Size</div>
+          <div class="value" id="metaSize">—</div>
+        </div>
+      </div>
+      <div>
+        <div class="section-label" style="margin-bottom:10px">Response JSON</div>
+        <div class="code-block raw-response" id="rawResponse">No response yet. Generate an image first.</div>
+      </div>
+    </div>
+
+    <div class="tab-content" id="tab-history">
+      <div class="section-label">Generation History <span style="font-weight:400;color:var(--text-dim)">(session only)</span></div>
+      <div class="history-grid" id="historyGrid">
+        <div class="empty-history">No images generated yet</div>
+      </div>
+    </div>
+
+    <div class="tab-content" id="tab-guide">
+      <div class="section-label">Integration Guide</div>
+
+      <div style="display:flex;gap:8px;margin-bottom:4px">
+        <button class="btn btn-ghost" onclick="showIntegration('n8n')" id="btn-n8n" style="border-color:var(--primary);color:var(--text)">n8n</button>
+        <button class="btn btn-ghost" onclick="showIntegration('make')" id="btn-make">Make.com</button>
+        <button class="btn btn-ghost" onclick="showIntegration('custom')" id="btn-custom">Custom Code</button>
+      </div>
+
+      <div id="guide-n8n" class="n8n-guide">
+        <div class="step">
+          <div class="step-num">1</div>
+          <div class="step-body">
+            <h4>Add an HTTP Request node</h4>
+            <p>In your n8n workflow, add an <strong>HTTP Request</strong> node.</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">2</div>
+          <div class="step-body">
+            <h4>Configure the request</h4>
+            <p>Method: <span class="code-inline">POST</span> &nbsp; URL: <span class="code-inline">https://your-worker.workers.dev/v1/images/generations</span></p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">3</div>
+          <div class="step-body">
+            <h4>Add Authorization header</h4>
+            <p>Header Name: <span class="code-inline">Authorization</span> &nbsp; Value: <span class="code-inline">Bearer YOUR_API_KEY</span></p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">4</div>
+          <div class="step-body">
+            <h4>Set the body (JSON)</h4>
+            <div class="code-block" style="margin-top:8px">{
+  "prompt": "{{ $json.prompt }}",
+  "model": "@cf/black-forest-labs/flux-1-schnell",
+  "n": 1
+}</div>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">5</div>
+          <div class="step-body">
+            <h4>Read the image</h4>
+            <p>Access the base64 image from: <span class="code-inline">{{ $json.data[0].b64_json }}</span></p>
+            <p style="margin-top:4px">Use a <strong>Move Binary Data</strong> node to convert it to a file, or pass it directly to other nodes.</p>
+          </div>
+        </div>
+      </div>
+
+      <div id="guide-make" class="n8n-guide" style="display:none">
+        <div class="step">
+          <div class="step-num">1</div>
+          <div class="step-body">
+            <h4>Add an HTTP module</h4>
+            <p>In your Make.com scenario, add the <strong>HTTP → Make a request</strong> module.</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">2</div>
+          <div class="step-body">
+            <h4>Set URL and method</h4>
+            <p>URL: <span class="code-inline">https://your-worker.workers.dev/v1/images/generations</span></p>
+            <p>Method: <span class="code-inline">POST</span></p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">3</div>
+          <div class="step-body">
+            <h4>Add headers</h4>
+            <p><span class="code-inline">Content-Type: application/json</span></p>
+            <p><span class="code-inline">Authorization: Bearer YOUR_API_KEY</span></p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">4</div>
+          <div class="step-body">
+            <h4>Request body</h4>
+            <div class="code-block" style="margin-top:8px">{
+  "prompt": "{{1.prompt}}",
+  "model": "@cf/black-forest-labs/flux-1-schnell"
+}</div>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">5</div>
+          <div class="step-body">
+            <h4>Parse response</h4>
+            <p>The image is in <span class="code-inline">data[0].b64_json</span> as a base64 string.</p>
+            <p style="margin-top:4px">Use <strong>Tools → Base64 Decode</strong> to convert it to binary, then send to Google Drive, email, etc.</p>
+          </div>
+        </div>
+      </div>
+
+      <div id="guide-custom" class="n8n-guide" style="display:none">
+        <div class="code-block">
+<span class="syntax-key">// JavaScript / Node.js</span>
+<span class="syntax-key">const</span> response = <span class="syntax-key">await</span> fetch(<span class="syntax-str">'https://your-worker.workers.dev/v1/images/generations'</span>, {
+  method: <span class="syntax-str">'POST'</span>,
+  headers: {
+    <span class="syntax-str">'Content-Type'</span>: <span class="syntax-str">'application/json'</span>,
+    <span class="syntax-str">'Authorization'</span>: <span class="syntax-str">'Bearer YOUR_API_KEY'</span>,
+  },
+  body: JSON.stringify({
+    prompt: <span class="syntax-str">'A futuristic cityscape at night'</span>,
+    model: <span class="syntax-str">'@cf/black-forest-labs/flux-1-schnell'</span>,
+    n: <span class="syntax-num">1</span>,
+    num_inference_steps: <span class="syntax-num">4</span>,
+  }),
+});
+
+<span class="syntax-key">const</span> data = <span class="syntax-key">await</span> response.json();
+<span class="syntax-key">const</span> base64 = data.data[<span class="syntax-num">0</span>].b64_json;
+
+<span class="syntax-key">// Convert to Blob for display/download</span>
+<span class="syntax-key">const</span> blob = <span class="syntax-key">await</span> (await fetch(<span class="syntax-str">`data:image/png;base64,${base64}`</span>)).blob();
+</div>
+        <div class="code-block" style="margin-top:12px">
+<span class="syntax-key"># Python</span>
+<span class="syntax-key">import</span> requests, base64
+
+response = requests.post(
+    <span class="syntax-str">'https://your-worker.workers.dev/v1/images/generations'</span>,
+    headers={<span class="syntax-str">'Authorization'</span>: <span class="syntax-str">'Bearer YOUR_API_KEY'</span>},
+    json={<span class="syntax-str">'prompt'</span>: <span class="syntax-str">'A futuristic cityscape'</span>, <span class="syntax-str">'model'</span>: <span class="syntax-str">'@cf/black-forest-labs/flux-1-schnell'</span>}
+)
+b64 = response.json()[<span class="syntax-str">'data'</span>][<span class="syntax-num">0</span>][<span class="syntax-str">'b64_json'</span>]
+
+<span class="syntax-key">with</span> open(<span class="syntax-str">'image.png'</span>, <span class="syntax-str">'wb'</span>) <span class="syntax-key">as</span> f:
+    f.write(base64.b64decode(b64))
+</div>
+      </div>
+    </div>
+
+    <div class="tab-content" id="tab-curl">
+      <div class="section-label">cURL Examples</div>
+
+      <div class="field">
+        <label>Your Worker URL <span class="tooltip">(updates examples below)</span></label>
+        <input type="url" id="curlUrl" placeholder="https://your-worker.workers.dev" oninput="updateCurlExamples()" />
+      </div>
+
+      <div>
+        <div class="section-label" style="margin-bottom:8px">Generate Image (OpenAI format)</div>
+        <div class="code-block" id="curlGenerate">curl -X POST https://your-worker.workers.dev/v1/images/generations \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "prompt": "A futuristic city at night",
+    "model": "@cf/black-forest-labs/flux-1-schnell",
+    "n": 1,
+    "num_inference_steps": 4
+  }'</div>
+      </div>
+
+      <div>
+        <div class="section-label" style="margin-bottom:8px">Health Check</div>
+        <div class="code-block" id="curlHealth">curl https://your-worker.workers.dev/health</div>
+      </div>
+
+      <div>
+        <div class="section-label" style="margin-bottom:8px">List Models</div>
+        <div class="code-block" id="curlModels">curl https://your-worker.workers.dev/v1/models \
+  -H "Authorization: Bearer YOUR_API_KEY"</div>
+      </div>
+
+      <div>
+        <div class="section-label" style="margin-bottom:8px">Response Format</div>
+        <div class="code-block">{
+  <span class="syntax-key">"created"</span>: <span class="syntax-num">1700000000</span>,
+  <span class="syntax-key">"data"</span>: [
+    {
+      <span class="syntax-key">"b64_json"</span>: <span class="syntax-str">"&lt;base64-encoded-png&gt;"</span>,
+      <span class="syntax-key">"revised_prompt"</span>: <span class="syntax-str">"A futuristic city at night"</span>
+    }
+  ],
+  <span class="syntax-key">"model"</span>: <span class="syntax-str">"@cf/black-forest-labs/flux-1-schnell"</span>,
+  <span class="syntax-key">"usage"</span>: {
+    <span class="syntax-key">"prompt_tokens"</span>: <span class="syntax-num">7</span>,
+    <span class="syntax-key">"total_tokens"</span>: <span class="syntax-num">7</span>
+  }
+}</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  let lastBase64 = null;
+  let lastPromptUsed = '';
+  let history = [];
+
+  function selectModel(card) {
+    document.querySelectorAll('.model-card').forEach(c => c.classList.remove('selected'));
+    card.classList.add('selected');
+  }
+
+  function switchTab(name, el) {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+    el.classList.add('active');
+    document.getElementById('tab-' + name).classList.add('active');
+  }
+
+  function showIntegration(type) {
+    ['n8n', 'make', 'custom'].forEach(t => {
+      document.getElementById('guide-' + t).style.display = t === type ? 'flex' : 'none';
+      document.getElementById('btn-' + t).style.borderColor = t === type ? 'var(--primary)' : 'var(--border)';
+      document.getElementById('btn-' + t).style.color = t === type ? 'var(--text)' : 'var(--text-muted)';
+    });
+    document.getElementById('guide-' + type).style.flexDirection = 'column';
+  }
+
+  function setStatus(type, text) {
+    const dot = document.getElementById('statusDot');
+    dot.className = 'status-dot' + (type ? ' ' + type : '');
+    document.getElementById('statusText').textContent = text;
+  }
+
+  async function generate() {
+    const workerUrl = document.getElementById('workerUrl').value.trim().replace(/\/$/, '');
+    const apiKey = document.getElementById('apiKey').value.trim();
+    const prompt = document.getElementById('prompt').value.trim();
+    const model = document.querySelector('input[name="model"]:checked').value;
+    const negativePrompt = document.getElementById('negativePrompt').value.trim();
+    const steps = parseInt(document.getElementById('steps').value);
+    const guidance = parseFloat(document.getElementById('guidance').value);
+
+    if (!workerUrl) { alert('Please enter your Worker URL'); return; }
+    if (!prompt) { alert('Please enter a prompt'); return; }
+
+    const btn = document.getElementById('generateBtn');
+    btn.disabled = true;
+
+    document.getElementById('spinner').style.display = 'block';
+    document.getElementById('loadingText').style.display = 'block';
+    document.getElementById('placeholder').style.display = 'none';
+    document.getElementById('genImage').style.display = 'none';
+    document.getElementById('imageActions').style.display = 'none';
+    setStatus('loading', 'Generating...');
+
+    const t0 = Date.now();
+    const body = { prompt, model, n: 1, num_inference_steps: steps, guidance_scale: guidance };
+    if (negativePrompt) body.negative_prompt = negativePrompt;
+
+    const headers = { 'Content-Type': 'application/json' };
+    if (apiKey) headers['Authorization'] = `Bearer ${apiKey}`;
+
+    let status = 0;
+    let responseData = null;
+
+    try {
+      const res = await fetch(`${workerUrl}/v1/images/generations`, {
+        method: 'POST',
+        headers,
+        body: JSON.stringify(body),
+      });
+      status = res.status;
+      const elapsed = Date.now() - t0;
+      responseData = await res.json();
+
+      document.getElementById('responseMeta').style.display = 'grid';
+      document.getElementById('metaStatus').textContent = status;
+      document.getElementById('metaTime').textContent = elapsed + 'ms';
+
+      const jsonStr = JSON.stringify(responseData, null, 2);
+      const b64Truncated = jsonStr.replace(/"b64_json":\s*"[^"]{80}[^"]*"/g, '"b64_json": "<base64 data...>"');
+      document.getElementById('metaSize').textContent = (jsonStr.length / 1024).toFixed(1) + 'KB';
+      document.getElementById('rawResponse').textContent = b64Truncated;
+
+      if (res.ok && responseData.data?.[0]?.b64_json) {
+        const b64 = responseData.data[0].b64_json;
+        lastBase64 = b64;
+        lastPromptUsed = prompt;
+
+        const imgSrc = `data:image/png;base64,${b64}`;
+        const imgEl = document.getElementById('genImage');
+        imgEl.src = imgSrc;
+        imgEl.style.display = 'block';
+        document.getElementById('imageActions').style.display = 'flex';
+        setStatus('ok', `Done in ${elapsed}ms`);
+
+        history.unshift({ src: imgSrc, prompt, b64, model, ts: new Date().toLocaleTimeString() });
+        renderHistory();
+      } else {
+        document.getElementById('placeholder').style.display = 'flex';
+        const errObj = responseData?.error;
+        const msg = (typeof errObj === 'object' ? errObj.message : errObj) || 'Unknown error';
+        const details = typeof errObj === 'object' ? errObj.details : '';
+        const hint = typeof errObj === 'object' ? errObj.hint : '';
+        setStatus('err', `Error: ${msg}${details ? ` | ${details}` : ''}${hint ? ` | ${hint}` : ''}`);
+      }
+    } catch (err) {
+      document.getElementById('placeholder').style.display = 'flex';
+      document.getElementById('rawResponse').textContent = 'Network error: ' + err.message;
+      setStatus('err', 'Request failed: ' + err.message);
+    } finally {
+      document.getElementById('spinner').style.display = 'none';
+      document.getElementById('loadingText').style.display = 'none';
+      btn.disabled = false;
+    }
+  }
+
+  function renderHistory() {
+    const grid = document.getElementById('historyGrid');
+    if (!history.length) {
+      grid.innerHTML = '<div class="empty-history">No images generated yet</div>';
+      return;
+    }
+    grid.innerHTML = history.map((h, i) => `
+      <div class="history-item" onclick="viewHistoryItem(${i})" title="${h.prompt}">
+        <img src="${h.src}" alt="Generated" loading="lazy" />
+        <div class="hist-prompt">${h.prompt}</div>
+      </div>
+    `).join('');
+  }
+
+  function viewHistoryItem(i) {
+    const h = history[i];
+    lastBase64 = h.b64;
+    lastPromptUsed = h.prompt;
+    document.getElementById('genImage').src = h.src;
+    document.getElementById('genImage').style.display = 'block';
+    document.getElementById('imageActions').style.display = 'flex';
+    document.getElementById('placeholder').style.display = 'none';
+    switchTab('image', document.querySelectorAll('.tab')[0]);
+  }
+
+  function downloadImage() {
+    if (!lastBase64) return;
+    const a = document.createElement('a');
+    a.href = `data:image/png;base64,${lastBase64}`;
+    a.download = `cf-img-${Date.now()}.png`;
+    a.click();
+  }
+
+  function copyBase64() {
+    if (!lastBase64) return;
+    navigator.clipboard.writeText(lastBase64).then(() => {
+      const btn = document.querySelector('[onclick="copyBase64()"]');
+      const orig = btn.innerHTML;
+      btn.innerHTML = '✓ Copied!';
+      setTimeout(() => btn.innerHTML = orig, 2000);
+    });
+  }
+
+  function updateCurlExamples() {
+    const url = document.getElementById('curlUrl').value.trim().replace(/\/$/, '') || 'https://your-worker.workers.dev';
+    document.getElementById('curlGenerate').textContent =
+`curl -X POST ${url}/v1/images/generations \\
+  -H "Authorization: Bearer YOUR_API_KEY" \\
+  -H "Content-Type: application/json" \\
+  -d '{
+    "prompt": "A futuristic city at night",
+    "model": "@cf/black-forest-labs/flux-1-schnell",
+    "n": 1,
+    "num_inference_steps": 4
+  }'`;
+    document.getElementById('curlHealth').textContent = `curl ${url}/health`;
+    document.getElementById('curlModels').textContent =
+`curl ${url}/v1/models \\
+  -H "Authorization: Bearer YOUR_API_KEY"`;
+  }
+
+  document.getElementById('prompt').addEventListener('keydown', function(e) {
+    if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') generate();
+  });
+</script>
+</body>
+</html>
